@@ -184,6 +184,8 @@ ad_proc -public lc_numeric {
         set out $num
     }
 
+    ns_log Notice "lc_numeric(num=$num, fmt=$fmt, loc=$locale): out=$out"
+
     set sep [lc_get -locale $locale "thousands_sep"]
     set dec [lc_get -locale $locale "decimal_point"]
     set grouping [lc_get -locale $locale "grouping"]

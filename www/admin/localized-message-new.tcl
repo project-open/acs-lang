@@ -16,6 +16,8 @@ ad_page_contract {
 }
 
 
+set focus ""
+
 # We rename to avoid conflict in queries
 set current_locale $locale
 set default_locale en_US

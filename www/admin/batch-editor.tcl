@@ -13,8 +13,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Batch edit messages"
 set context [list [list "package-list?[export_vars { locale }]" $locale_label] \
@@ -151,17 +151,25 @@ ad_form -name batch_editor -edit_buttons $edit_buttons -form {
 
 
 set count $page_start
+array set sections {}
 db_foreach get_messages {} {
     ad_form -extend -name batch_editor -form \
         [list [list "message_key_$count:text(hidden)" {value $message_key}]]
     
     set message_url "edit-localized-message?[export_vars { locale package_key message_key show }]"
 
+	# Adding section
+	set section_name "$package_key.$message_key"
+	if { ![info exists sections($section_name)] } {
+		set sec [list "-section" $section_name {legendtext "$section_name"}]
+		ad_form -extend -name batch_editor -form [list $sec]
+		set sections($section_name) "$section_name"
+	}
+
     ad_form -extend -name batch_editor -form \
         [list [list "message_key_pretty_$count:text(inform)" \
                    {label "Message Key"} \
-                   {value "<a href=\"$message_url\">$package_key.$message_key</a>"} \
-                   {section "$package_key.$message_key"}]]
+                   {value "<a href=\"$message_url\">$package_key.$message_key</a>"}]]
     
     if { ![empty_string_p $description] } {
         set description_edit_url "edit-description?[export_vars { locale package_key message_key show }]"

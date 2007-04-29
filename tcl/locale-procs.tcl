@@ -50,14 +50,16 @@ ad_proc -public lang::system::site_wide_locale {
     return $parameter_locale
 }
 
-ad_proc -public lang::system::package_level_locale_not_cached {
+ad_proc -private lang::system::package_level_locale_not_cached {
     package_id
 } {
-    return [db_string get_system_locale {} -default {}]
+    return [db_string get_package_locale {} -default {}]
 }
 
 ad_proc -public lang::system::package_level_locale {
     package_id
+} {
+    @return empty string if not use_package_level_locales_p, or the package locale from apm_packages table.
 } {
     if { ![use_package_level_locales_p] } {
         return {}
@@ -230,7 +232,7 @@ ad_proc -private lang::system::get_locales_not_cached {} {
     }]
 }
 
-ad_proc -public lang::system::get_locale_options_not_cached {} {
+ad_proc -private lang::system::get_locale_options_not_cached {} {
     Return all enabled locales in the system in a format suitable for the options argument of a form.
 
     @author Lars Pind
@@ -245,7 +247,7 @@ ad_proc -public lang::system::get_locale_options_not_cached {} {
 #
 #####
 
-ad_proc -public lang::user::package_level_locale_not_cached {
+ad_proc -private lang::user::package_level_locale_not_cached {
     user_id
     package_id
 } {
@@ -288,27 +290,32 @@ ad_proc -public lang::user::site_wide_locale {
     }
 
     # For all the users with a user_id of 0 don't cache.
-    if { $user_id == 0} {
-	return [lang::user::site_wide_locale_not_cached $user_id]
-    }
+    # MS: WHY ON EARTH ?
+    #    if { $user_id == 0} {
+    #	return [lang::user::site_wide_locale_not_cached $user_id]
+    #    }
 
     # Cache for the lifetime of sessions (7 days)
     return [util_memoize [list lang::user::site_wide_locale_not_cached $user_id] [sec_session_timeout]]
 }
 
-ad_proc -public lang::user::site_wide_locale_not_cached {
+ad_proc -private lang::user::site_wide_locale_not_cached {
     user_id
 } {
     Get the user's preferred site wide locale.
 } {
+    set system_locale [lang::system::site_wide_locale]
     if { $user_id == 0 } {
 	set locale [ad_get_cookie "ad_locale"]
 	if { [empty_string_p $locale] } {
-	    set locale [lang::system::site_wide_locale]
+	    set locale $system_locale
 	}
 	return $locale
     } else {
-        return [db_string get_user_site_wide_locale {} -default ""]
+	# MS: This is a bug, as the returned value is different whether
+	# you give it a user_id or not. WHY EVER this was done.
+	
+        return [db_string get_user_site_wide_locale {} -default "$system_locale"]
     }
 }
 
@@ -346,6 +353,7 @@ ad_proc -public lang::user::locale {
 
 ad_proc -public lang::user::set_locale {
     {-package_id ""}
+    {-user_id ""}
     locale
 } {
     Set user locale setting for a given package instance.
@@ -353,7 +361,9 @@ ad_proc -public lang::user::set_locale {
     @param package_id The package for which you want to set the locale setting, if you want to set it for a specific package, as opposed to a site-wide setting.
     @param locale The new locale that you want to use as your system locale.
 } {
-    set user_id [ad_conn user_id]
+    if { $user_id eq "" } {
+	set user_id [ad_conn user_id]
+    }
 
     if { $user_id == 0 } {
         # Not logged in, use a cookie-based client locale
@@ -648,155 +658,16 @@ ad_proc -public lang::conn::timezone {} {
 }
 
 
-
 #####
 #
 # Backwards compatibility procs
 #
 #####
-
-ad_proc -deprecated -warn ad_locale {
-    context 
-    {item "locale"}
-} {
-    Returns the value of a locale item in a particular context. For example, to 
-    get the language, locale, and timezone preference for the current user:
-
-    <pre>
-    set user_lang [ad_locale user language] => en
-
-    set user_locale [ad_locale user locale] => en_US
-
-    set user_tz [ad_locale user timezone] => PST
-    </pre>
-
-    To get the preferred language of the current subsite:
-
-    <pre>
-    set user_lang [ad_locale subsite language] => ja
-    </pre>
-
-    Requires ad_locale_establish_vars to be run as a filter on each web page 
-    before this procedure is called.
-    @see           ad_locale_establish_vars
-    @author        Henry Minsky (hqm@mit.edu)
-    
-    @param context Context in which a locale value can be obtained.
-                   The only context that is currently implemented is user (for the current user).
-                   Examples of other contexts that could be implemented are:
-                   subsite (for the group that owns the current web page)
-    @param item    Specific item of data. 
-                   The only items that are implemented are locale, timezone and language.
-                   You can change the implementation to add other items as required.
-    @return        Value of the item in the specified context
-
-    @see lang::conn::locale
-    @see lang::user::locale
-    @see lang::user::language
-    @see lang::user::timezone
-    @see lang::util::charset_for_locale
-} {
-    switch $context {
-        request {
-	    switch $item {
-                locale {
-                    return [lang::conn::locale -site_wide]
-                }
-                language {
-                    return [lang::conn::language -site_wide]
-                }
-                timezone {
-                    return [lang::conn::timezone]
-                }
-                default {
-		    error "unsupported option to ad_locale: $item"
-                }
-            }
-        }
-	user {
-	    switch $item {
-		locale {
-		    return [lang::user::locale -site_wide]
-		}
-		language {
-		    return [lang::user::language -site_wide]
-		}
-		timezone {
-		    return [lang::user::timezone]
-		}
-		default {
-		    error "unsupported option to ad_locale: $item"
-		}
-	    }
-	}
-	charset {
-	    return [lang::util::charset_for_locale $item]
-	}
-	default {
-	    error "ad_locale: unknown context $context"
-	}
-    }
-}
-
-ad_proc -deprecated -warn ad_locale_set  { 
-    item 
-    value 
-} {
-    Sets the user's preferred locale info as a session var
-    <p>
-    usage:
-    <pre>
-    ad_locale_set locale "en_US"
-    ad_locale_set timezone "PST"
-    </pre>
-    @see lang::user::set_locale
-    @see lang::user::set_timezone
-} {
-    switch $item {
-        locale {
-            lang::user::set_locale $value
-        }
-        timezone {
-            lang::user::set_timezone $value
-        }
-        default {
-            error "Unknown item, $item"
-        }
-    }
-}
-
-ad_proc -deprecated -warn ad_locale_set_system_timezone { 
-    timezone
-}  { 
-    Tell OpenACS what timezone we think it's running in.
-    
-    @param timezone name from acs-reference package (e.g., Asia/Tokyo, America/New_York)
-    @see lang::system::set_timezone
-} {
-    lang::system::set_timezone $timezone
-}
-
-
-ad_proc -deprecated -warn ad_locale_get_system_timezone { }  { 
-    Ask OpenACS what it thinks our timezone is.
-
-    @return  a timezone name from acs-reference package (e.g., Asia/Tokyo, America/New_York)
-    @see lang::system::timezone
-} {
-    return [lang::system::timezone]
-}
-
-
-ad_proc -deprecated -warn ad_locale_system_tz_offset { } {
-    @return number of hours to subtract from local (Oracle) time to get UTC
-    @see lang::system::timezone_utc_offset
-} {
-    return [lang::system::timezone_utc_offset]
-}
-
-ad_proc -deprecated -public ad_locale_get_label { locale } {
+ad_proc -deprecated -warn -public ad_locale_get_label { locale } {
 
     Returns the label (name) of locale
+
+    To be removed in 5.3
 
     @author	Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
 
@@ -804,6 +675,7 @@ ad_proc -deprecated -public ad_locale_get_label { locale } {
 
     @return	String containing the label for the locale
 
+    @see lang::util::get_label
 } {
     return [db_string select_locale_label {
         select label 

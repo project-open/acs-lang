@@ -127,7 +127,7 @@ if { [form is_request locale_editing] } {
 
     form get_values locale_editing
 
-    set locale_label [ad_locale_get_label $locale]
+    set locale_label [lang::util::get_label $locale]
 
     if { $label == "" } {
         element set_error locale_editing label "Label is required"
@@ -153,6 +153,7 @@ if { [form is_valid locale_editing] } {
             where locale = :locale"
 
     }
+    db_flush_cache -cache_key_pattern ad_lang_mime_charset_$locale
     forward "index?tab=locales"
 
 }

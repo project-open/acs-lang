@@ -17,12 +17,22 @@ ad_page_contract {
     {return_url {}}
 }
 
+if { [string length $locale] == 2 } {
+    # Only language provided, let's get the default locale for this language
+    set default_locale [lang::util::default_locale_from_lang $locale]
+    if { [empty_string_p $default_locale] } {
+        error "Could not look up locale for language $locale"
+    } else {
+        set locale $default_locale
+    }
+}
+
 # We rename to avoid conflict in queries
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Edit $package_key.$message_key"
 set context [list [list [export_vars -base package-list { locale }] $locale_label] \

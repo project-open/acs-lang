@@ -14,22 +14,6 @@ ad_library {
 }
 
 
-ad_proc -private ad_locale_escape_vars_if_not_null {
-    list
-} {
-    Processes a list of variables before they are passed into
-    a regexp command.
-
-    @param list   List of variable names
-} {
-    foreach lm $list {
-	upvar $lm foreign_var
-	if { [exists_and_not_null foreign_var] } {
-	    set foreign_var "\[$foreign_var\]"
-	}
-    }
-}
-
 ad_proc -public lc_parse_number { 
     num 
     locale 
@@ -64,7 +48,7 @@ ad_proc -public lc_parse_number {
     set neg [lc_get -locale $locale "negative_sign"]
     set pos [lc_get -locale $locale "positive_sign"]
 
-    ad_locale_escape_vars_if_not_null {dec thou neg pos}
+    lang::util::escape_vars_if_not_null {dec thou neg pos}
 
     # Pattern actually looks like this (separators notwithstanding):
     # {^\ *([-]|[+])?\ *([0-9]+|[1-9][0-9]{1,2}([,][0-9]{3})+)([.][0-9]*)?\ *$}
@@ -144,6 +128,9 @@ ad_proc -private lc_sepfmt {
         return $num
     }
     
+    # we need to sanitize the subspec
+    regsub -all -- "(\[&\\\\\])" $sep "\\\\\\1" sep
+
     set match "^(-?$num_re+)("
     set group [lindex $grouping 0]
     
@@ -184,16 +171,17 @@ ad_proc -public lc_numeric {
         set out $num
     }
 
-    ns_log Notice "lc_numeric(num=$num, fmt=$fmt, loc=$locale): out=$out"
-
     set sep [lc_get -locale $locale "thousands_sep"]
     set dec [lc_get -locale $locale "decimal_point"]
     set grouping [lc_get -locale $locale "grouping"]
 
     # Fall back on en_US if grouping is not on valid format
-    if { ![string equal $locale en_US] && ![regexp {^[0-9 ]+$} $grouping] } {
+    if { $locale ne "en_US" && ![regexp {^[0-9 -]+$} $grouping] } {
         ns_log Warning "lc_numeric: acs-lang.localization-grouping key has invalid value $grouping for locale $locale"
-        return [lc_numeric $num $fmt en_US]
+        set sep ,
+        set dec .
+        set grouping 3
+        
     }
     
     regsub {\.} $out $dec out

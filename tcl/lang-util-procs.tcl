@@ -9,7 +9,7 @@ ad_library {
     http://www.fsf.org/copyleft/gpl.html
 
     @creation-date 10 September 2000
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
@@ -32,7 +32,7 @@ ad_proc -public lang::util::lang_sort {
     insert into lang_testsort values ('lzim');  
     </pre>
 
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
 
     @param field       Name of Oracle column
     @param locale      Locale for sorting. 
@@ -61,7 +61,7 @@ ad_proc -private lang::util::get_hash_indices { multilingual_string } {
 
     @author Peter marklund (peter@collaboraid.biz)
 } {
-    set regexp_pattern {(?:^|[^\\])(\#[-a-zA-Z0-9_:\.]+\#)}
+    set regexp_pattern {(?:^|[^\\])(\#[-a-zA-Z0-9_:]+\.[-a-zA-Z0-9_:]+\#)}
     return [get_regexp_indices $multilingual_string $regexp_pattern]
 }
 
@@ -366,9 +366,8 @@ ad_proc -public lang::util::charset_for_locale {
     @param locale  Name of a locale, as language_COUNTRY using ISO 639 and ISO 3166
     @return        IANA MIME character set name
 } {
-    # LARS:
-    # This should probably be cached
-    return [db_string charset_for_locale {}]
+    # DRB: cache this now that ad_conn tracks it
+    return [db_string -cache_key ad_lang_mime_charset_$locale charset_for_locale {}]
 }
 
 ad_proc -private lang::util::default_locale_from_lang_not_cached { 
@@ -675,8 +674,8 @@ ad_proc -public lang::util::translator_mode_set {
     translator_mode_p
 } {
     Sets whether translator mode is enabled for this session or
-    not. 
-    
+    not.
+
     @author Lars Pind (lars@collaboraid.biz)
     @creation-date October 24, 2002
 
@@ -686,7 +685,7 @@ ad_proc -public lang::util::translator_mode_set {
 } {
     ad_set_client_property acs-lang translator_mode_p $translator_mode_p
 }
-    
+
 ad_proc -private lang::util::record_message_lookup {
     message_key
 } {
@@ -714,7 +713,7 @@ ad_proc -private lang::util::get_message_lookups {} {
     @author Peter Marklund
 } {
     global __lang_message_lookups
-    
+
     if { [info exists __lang_message_lookups] } {
         return $__lang_message_lookups
     } else {
@@ -722,73 +721,116 @@ ad_proc -private lang::util::get_message_lookups {} {
     }
 }
 
-#####
-#
-# Compatibility procs
-#
-#####
 
-ad_proc -deprecated -warn lang_sort {
-    field 
-    {locale {}}
-} { 
-    Each locale can have a different alphabetical sort order. You can test
-    this proc with the following data:
-    <pre>
-    insert into lang_testsort values ('lama');
-    insert into lang_testsort values ('lhasa');
-    insert into lang_testsort values ('llama');
-    insert into lang_testsort values ('lzim');  
-    </pre>
+ad_proc -public lang::util::get_label { locale } {
 
-    @author Jeff Davis (davis@arsdigita.com)
+    Returns the label (name) of locale
 
-    @param field       Name of Oracle column
-    @param locale      Locale for sorting. 
-                       If locale is unspecified just return the column name
-    @return Language aware version of field for Oracle <em>ORDER BY</em> clause.
+    @author	Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
 
-    @see lang::util::sort
+    @param locale	Code for the locale, eg "en_US"
+
+    @return	String containing the label for the locale
+
 } {
-    return [lang::util::sort $field $locale]
+    return [db_string select {}]
 }
 
-ad_proc -deprecated -warn ad_locale_charset_for_locale { 
-    locale 
-} {
-    Returns the MIME charset name corresponding to a locale.
 
-    @see           ad_locale
-    @author        Henry Minsky (hqm@mit.edu)
-    @param locale  Name of a locale, as language_COUNTRY using ISO 639 and ISO 3166
-    @return        IANA MIME character set name
-    @see           lang::util::charset_for_locale
+ad_proc -private lang::util::escape_vars_if_not_null {
+    list
 } {
-    return [lang::util::charset_for_locale $locale]
+    Processes a list of variables before they are passed into
+    a regexp command.
+
+    @param list   List of variable names
+} {
+    foreach lm $list {
+	upvar $lm foreign_var
+	if { [exists_and_not_null foreign_var] } {
+	    set foreign_var "\[$foreign_var\]"
+	}
+    }
 }
 
-ad_proc -deprecated -warn ad_locale_locale_from_lang { 
-    language
+ad_proc -public lang::util::convert_to_i18n {
+    {-locale}
+    {-package_key "acs-translations"}
+    {-message_key ""}
+    {-prefix ""}
+    {-text:required}
 } {
-    Returns the default locale for a language
-    
-    @author          Henry Minsky (hqm@mit.edu)
-    @param language  Name of a country, using ISO-3166 two letter code
-    @return          Default locale
-    @see             lang::util::default_locale_from_lang
+    Internationalising of Attributes. This is done by storing the attribute with it's acs-lang key
 } {
-    return [lang::util::default_locale_from_lang $language]
+
+    # If the package acs-translations is installed do the conversion
+    # magic, otherwise just return the text again.
+
+    if {[apm_package_id_from_key acs-translations]} {
+	if {[empty_string_p $message_key]} {
+	    if {[empty_string_p $prefix]} {
+		# Having no prefix or message_key is discouraged as it
+		# might have interesting side effects due to double
+		# meanings of the same english string in multiple contexts
+		# but for the time being we should still allow this.
+		set message_key [lang::util::suggest_key $text]
+	    } else {
+		set message_key "${prefix}_[lang::util::suggest_key $text]"
+	    }
+	} 
+	
+	# Register the language keys
+	lang::message::register en_US $package_key $message_key $text
+	if {[exists_and_not_null locale]} {
+	    lang::message::register $locale $package_key $message_key $text
+	}
+	
+	return "#${package_key}.${message_key}#"
+    } else {
+	return "$text"
+    }
 }
 
-ad_proc -deprecated -warn ad_locale_language_name { 
-    language 
+ad_proc -public lang::util::localize_list_of_lists {
+    {-list}
 } {
-    Returns the nls_language name for a language
-
-    @author          Henry Minsky (hqm@mit.edu)
-    @param language  Name of a country, using ISO-3166 two letter code
-    @return          The nls_language name of the language.
-    @see             lang::util::nls_language_from_language
+    localize the elements of a list_of_lists
 } {
-    return [lang::util::nls_language_from_language $language]
+    set list_output [list]
+    foreach item $list {
+	set item_output [list]
+	foreach part $item {
+	    lappend item_output [lang::util::localize $part]
+	}
+	lappend list_output $item_output
+    }
+    return $list_output
 }
+
+ad_proc -public lang::util::get_locale_options {
+} {
+    Return a list of locales know to the system
+} {
+    return [util_memoize lang::util::get_locale_options_not_cached]
+}
+
+ad_proc -private lang::util::get_locale_options_not_cached {} {
+    Return all enabled locales in the system in a format suitable for the options argument of a form.
+
+    @author Lars Pind
+} {
+    return [db_list_of_lists select_locales {}]
+}
+
+ad_proc -public lang::util::edit_lang_key_url {
+    -message:required
+    {-package_key "acs-translations"}
+} {
+} {
+    if { [regsub "^${package_key}." [string trim $message "\#"] {} message_key] } {
+	 set edit_url [export_vars -base "[apm_package_url_from_key "acs-lang"]admin/edit-localized-message" { { locale {[ad_conn locale]} } package_key message_key { return_url [ad_return_url] } }]
+     } else {
+	 set edit_url ""
+     }
+     return $edit_url
+ }

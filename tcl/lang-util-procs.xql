@@ -25,4 +25,20 @@
       </querytext>
    </fullquery>
 
+   <fullquery name="lang::util::get_label.select">
+      <querytext>
+        select label 
+          from ad_locales
+         where lower(locale) = lower(:locale)
+      </querytext>
+   </fullquery>
+
+   <fullquery name="lang::util::get_locale_options_not_cached.select_locales">
+      <querytext>
+       select label, locale
+        from   ad_locales
+	order by label
+      </querytext>
+   </fullquery>
+
 </queryset>

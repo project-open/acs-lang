@@ -8,7 +8,7 @@ ad_library {
     http://www.fsf.org/copyleft/gpl.html
 
     @creation-date 10 September 2000
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Lars Pind (lars@collaboraid.biz)
@@ -93,7 +93,7 @@ ad_proc -public lang::message::register {
             # The system will not function correctly if there are keys registered in other locales
             # than en_US that are not present for en_US. This introduces the inconvenience of having to
             # register the en_US messages first, but that is manageable
-            set error_message "lang::message::register - refusing to register message for non-en_US locale ${locale}. The message key ${package_key}.${message_key} bust be registered in en_US first"
+            set error_message "lang::message::register - refusing to register message for non-en_US locale ${locale}. The message key ${package_key}.${message_key} must be registered in en_US first"
             ns_log Error $error_message
             error $error_message
         }
@@ -651,7 +651,7 @@ ad_proc -public lang::message::message_exists_p { locale key } {
 ad_proc -public lang::message::lookup {
     locale
     key
-    {default ""}
+    {default "TRANSLATION MISSING"}
     {substitution_list {}}
     {upvar_level 1}
     {translator_mode_p 1}
@@ -703,7 +703,7 @@ ad_proc -public lang::message::lookup {
                               Useful if you're not using this message in the page itself, but e.g.
                               for localization data or for the list of messages on the page.
 
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Henry Minsky (hqm@arsdigita.com)
     @author Peter Marklund (peter@collaboraid.biz)
 
@@ -765,13 +765,7 @@ ad_proc -public lang::message::lookup {
                         set message [nsv_get lang_message_$locale $key]
                     } else {
                         ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-
-			if {![empty_string_p $default]} {
-			    set message $default
-			} else {
-			    set message "MESSAGE KEY MISSING: '$key'"
-			}
-
+                        set message "MESSAGE KEY MISSING: '$key'"
                     }
                 }
             }
@@ -884,7 +878,7 @@ ad_proc -public _mr { locale key message } {
 
     package_key.message_key
 
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     
     @param locale  Abbreviation for language of the message or the locale.
     @param key     Unique identifier for this message. Will be the same identifier
@@ -927,7 +921,7 @@ ad_proc -public _ {
 
     @return           A localized message
     
-    @author Jeff Davis (davis@arsdigita.com)
+    @author Jeff Davis (davis@xarg.net)
     @author Peter Marklund (peter@collaboraid.biz)
     @author Christian Hvid (chvid@collaboraid.biz)
 
@@ -942,57 +936,6 @@ ad_proc -public _ {
 # Backwards compatibility procs
 #
 #####
-
-ad_proc -private -deprecated -warn lang_message_register { locale key message } { 
-
-    Normally accessed through the _mr procedure.
-    Registers a message in a given locale or language.
-    Inserts the message into the table lang_messages
-    if it does not exist and updates if it does.
-
-    @author Jeff Davis (davis@arsdigita.com)
-    @author Bruno Mattarollo (bruno.mattarollo@ams.greenpeace.org)
-    @see _mr
-    
-    @param locale  Locale or language of the message. If a language is supplied,
-                   the default locale for the language is looked up. 
-                   Taken from ad_locales table.
-    @param key     Unique identifier for this message. Will be the same identifier
-                   for each language
-    @param message Text of the message
-    
-    @see lang::message::register
-} { 
-    return [lang::message::register $locale $key $message]
-}
-
-ad_proc -private -deprecated -warn lang_message_lookup {
-    locale
-    key
-    {default "TRANSLATION MISSING"}
-} {    
-    @see lang::message::lookup
-} { 
-    return [lang::message::lookup $locale $key $default {} 2]
-}
-
-ad_proc -deprecated -warn lang_babel_translate { 
-    msg
-    lang
-} {
-    Translates an English string into a different language
-    using Babelfish.
-
-    @author            Henry Minsky (hqm@mit.edu)
-
-    @param msg         String to translate
-    @param lang        Abbreviation for lang in which to translate string
-    @return            Translated string
-
-    @see lang::message::translate
-} {
-    return [lang::message::translate $msg $lang]
-}     
 
 
 ad_proc -public lang::message::update_description {

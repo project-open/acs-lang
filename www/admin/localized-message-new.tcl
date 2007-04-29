@@ -16,14 +16,12 @@ ad_page_contract {
 }
 
 
-set focus ""
-
 # We rename to avoid conflict in queries
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Create New Message"
 set context [list [list "package-list?[export_vars { locale }]" $locale_label] \
@@ -112,3 +110,7 @@ if { [form is_valid message_new] } {
     forward $return_url
 
 }
+
+set focus ""
+
+ad_return_template

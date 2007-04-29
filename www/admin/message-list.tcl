@@ -24,8 +24,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title $package_key
 set context [list [list [export_vars -base package-list { locale }] $locale_label] $page_title]
@@ -152,3 +152,12 @@ multirow foreach show_opts {
     }
 }
 
+
+# Locale switch
+set languages [lang::system::get_locale_options]
+
+ad_form -name locale_form -action [ad_conn url] -export { tree_id category_id } -form {
+    {locale:text(select) {label "Language"} {value $locale} {options $languages}}
+}
+
+set form_vars [export_ns_set_vars form {locale form:mode form:id __confirmed_p __refreshing_p formbutton:ok} [ad_conn form]]

@@ -176,7 +176,6 @@ ad_form -extend -name message -form {
 	
 	ns_httpget $lang_server_url $lang_server_timeout
     } err_msg
-    
 
     if { [empty_string_p $return_url] } {
         set return_url "[ad_conn url]?[export_vars { locale package_key message_key show }]"

@@ -169,7 +169,7 @@ ad_form -extend -name message -form {
 	set sender_email [db_string sender_email "select email as sender_email from parties where party_id = [ad_get_user_id]" -default $system_owner_email]
 	set sender_first_names [db_string sender_email "select first_names from persons where person_id = [ad_get_user_id]" -default "System"]
 	set sender_last_name [db_string sender_email "select last_name from persons where person_id = [ad_get_user_id]" -default "Administrator"]
-	set lang_server_base_url "http://berlin.dnsalias.com/acs-lang/lang-message-register"
+	set lang_server_base_url "http://berlin.dnsalias.com/acs-lang-server/lang-message-register"
 	set lang_server_base_url [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerURL" -default $lang_server_base_url]
 	set lang_server_timeout [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerTimeout" -default 5]
 	set lang_server_url [export_vars -base $lang_server_base_url {locale package_key message_key message comment package_version sender_email sender_first_names sender_last_name}]

@@ -16,4 +16,3 @@
 drop table ad_locale_user_prefs;
 drop view enabled_locales;
 drop table ad_locales;
-

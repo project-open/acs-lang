@@ -22,8 +22,8 @@ ad_page_contract {
 set current_locale $locale
 set default_locale en_US
 
-set locale_label [ad_locale_get_label $current_locale]
-set default_locale_label [ad_locale_get_label $default_locale]
+set locale_label [lang::util::get_label $current_locale]
+set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title $locale_label
 set context [list $page_title]
@@ -61,7 +61,7 @@ db_multirow -extend {
             group  by package_key) q
     order  by package_key
 } {
-    set num_untranslated [expr $num_messages - $num_translated]
+    set num_untranslated [expr {$num_messages - $num_translated}]
 
     set num_messages_pretty [lc_numeric $num_messages]
     set num_translated_pretty [lc_numeric $num_translated]
@@ -85,14 +85,14 @@ db_multirow -extend {
 #####
 
 set search_locales [list \
-                        [list "Current locale - [ad_locale_get_label $current_locale]" $current_locale] \
-                        [list "Master locale - [ad_locale_get_label $default_locale]" $default_locale]]
+                        [list "Current locale - [lang::util::get_label $current_locale]" $current_locale] \
+                        [list "Master locale - [lang::util::get_label $default_locale]" $default_locale]]
 
 ad_form -name search -action message-search -form {
     {locale:text(hidden) {value $locale}}
 }
 
-if { ![string equal $default_locale $current_locale] } {
+if { $default_locale ne $current_locale } {
     ad_form -extend -name search -form {
         {search_locale:text(select)
             {options $search_locales}

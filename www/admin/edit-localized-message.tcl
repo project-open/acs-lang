@@ -50,6 +50,8 @@ set usage_show_url [export_vars -base [ad_conn url] { locale package_key message
 
 set delete_url [export_vars -base message-delete { locale package_key message_key show {return_url {[ad_return_url]}} }]
 
+set first_translated_message ""
+
 
 ad_form -name message -form {
     {locale:text(hidden),optional {value $current_locale}}
@@ -163,8 +165,6 @@ ad_form -extend -name message -form {
         } 
 
         set first_translated_message "<ul> <li>First translated by [acs_community_member_link -user_id $creation_user_id -label $creation_user_name] on $creation_date</li></ul>"
-    } else {
-        set first_translated_message ""
     }
 } -on_submit {
 

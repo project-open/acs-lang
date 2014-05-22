@@ -804,6 +804,14 @@ ad_proc -private lang::catalog::import_messages {
         set upgrade_status "no_upgrade"
         set conflict_p "f"
 
+
+	if {"delete" == $db_change && "none" == $file_change} {
+	    set db_change "none"
+	    set file_change "add"
+	}
+
+	ns_log Debug "lang::catalog::import_messages - message_key=$message_key, db_change=$db_change, file_change=$file_change"
+
         switch $db_change {
             none {
                 switch $file_change {

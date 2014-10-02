@@ -50,9 +50,8 @@ ad_proc -public lang::message::register_remote {
 	set http_response [ns_httpget $lang_server_url $lang_server_timeout]
 
     } err_msg]} {
-
-	ad_return_complaint 1 "<b>Error Submitting Translation</b>:$
-		<pre>err_msg</pre>
+	ad_return_complaint 1 "<b>Error Submitting Translation</b>:
+		<pre>$err_msg</pre>
 		While executing the command:<br>
 		<pre>ns_httpget $lang_server_url $lang_server_timeout</pre>
 	"

@@ -17,48 +17,76 @@ ad_library {
 
 namespace eval lang::message {}
 
-
-ad_proc -public lang::message::register_remote {
-    {-update_sync:boolean}
-    {-upgrade_status "no_upgrade"}
-    {-conflict:boolean}
-    {-comment ""}
+ad_proc -public lang::message::check { 
     locale
     package_key
     message_key
     message
-} {
+} { 
     <p>
-    Submits the translation to the translation server.
+    Check a message for semantic and sanity correctness (usually called just before a message is registered).
+    Throws an error when one of the checks fails.
     </p>
-    @author Frank Bergmann (frank.bergmann@project-open.com)
-    @see lang::message::register for parameters
-} {
-    # Send a message to the language server
-    set http_response ""
-    if {[catch {
-	set package_version [db_string package_version "select max(version_name) from apm_package_versions where package_key = :package_key" -default ""]
-	set system_owner_email [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner "" [ad_system_owner]]
-	set sender_email [db_string sender_email "select email as sender_email from parties where party_id = [ad_get_user_id]" -default $system_owner_email]
-	set sender_first_names [db_string sender_email "select first_names from persons where person_id = [ad_get_user_id]" -default "System"]
-	set sender_last_name [db_string sender_email "select last_name from persons where person_id = [ad_get_user_id]" -default "Administrator"]
-	set lang_server_base_url "http://l10n.project-open.net/acs-lang-server/lang-message-register"
-	set lang_server_base_url [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerURL" -default $lang_server_base_url]
-	set lang_server_timeout [parameter::get_from_package_key -package_key "acs-lang" -parameter "LangServerTimeout" -default 5]
-	set lang_server_url [export_vars -base $lang_server_base_url {locale package_key message_key message comment package_version sender_email sender_first_names sender_last_name}]
+} { 
+    # Qualify the locale variable value with a country code if it is
+    # just a language
+    if { [string length $locale] == 2 } {
+        # It seems to be a language (iso codes are 2 characters)
+        # We don't do a more throughout check since this is not
+        # invoked by users.
+        # let's get the default locale for that language
+        set locale [lang::util::default_locale_from_lang $locale]
+    } 
 
-	set http_response [ns_httpget $lang_server_url $lang_server_timeout]
+    # Create a globally (across packages) unique key for the cache
+    set key "${package_key}.${message_key}"
 
-    } err_msg]} {
-	ad_return_complaint 1 "<b>Error Submitting Translation</b>:
-		<pre>$err_msg</pre>
-		While executing the command:<br>
-		<pre>ns_httpget $lang_server_url $lang_server_timeout</pre>
-	"
-	ad_script_abort
+    # Check that non-en_US messages don't have invalid embedded variables
+    # Exclude the special case of datetime configuration messages in acs-lang. An alternative
+    # to treating those messages as a special case here would be to have those messages use
+    # quoted percentage signs (double percentage signs).
+    if { $locale ne "en_US" && ![regexp {^acs-lang\.localization-} $key] } {
+        set embedded_vars [get_embedded_vars $message]
+        set embedded_vars_en_us [get_embedded_vars [lang::message::lookup en_US $key {} {} 0]]
+        set missing_vars [util_get_subset_missing $embedded_vars $embedded_vars_en_us]
+
+        if { [llength $missing_vars] > 0 } {
+            error "Message key '$key' in locale '$locale' has these embedded variables not present in the en_US locale:\
+		[join $missing_vars ","]."
+        }
     }
+    
+    # If a localization key from acs-lang...
+    if {[regexp {^acs-lang\.localization-(.*)$} $key match lc_key]} {
+	#
+	# ...number separators for decimal and thousands must be
+	# checked to ensure they are not equal, otherwise the
+	# localized number parsing will fail. 
+	#
+	if {$lc_key in {decimal_point thousands_sep mon_thousands_sep}} {
+	    #
+	    # Fetch values in case there were already loaded.
+	    #
+	    foreach k {decimal_point thousands_sep mon_thousands_sep} {
+		set $k [expr {[lang::message::message_exists_p $locale acs-lang.localization-$k] ?
+			      [lc_get -locale $locale $k] : ""}]
+	    }
+	    #
+	    # Overwrite the fetched value with the provided one.
+	    #
+	    set $lc_key $message
 
-    return http_response
+	    #
+	    # We require, that the decimal_point was either provided
+	    # or loaded before to be able to compare it with the
+	    # thousands points.
+	    #
+	    if {$decimal_point ne "" &&
+		[string first $decimal_point "$thousands_sep$mon_thousands_sep"] > -1} {
+		error "locale $locale, key: $key: Message keys for thousands and decimal separators must be different."
+	    }
+	}
+    }
 }
 
 
@@ -143,20 +171,9 @@ ad_proc -public lang::message::register {
             error $error_message
         }
     }
-
-    # Check that non-en_US messages don't have invalid embedded variables
-    # Exclude the special case of datetime configuration messages in acs-lang. An alternative
-    # to treating those messages as a special case here would be to have those messages use
-    # quoted percentage signs (double percentage signs).
-    if { $locale ne "en_US" && ![regexp {^acs-lang\.localization-} $key] } {
-        set embedded_vars [get_embedded_vars $message]
-        set embedded_vars_en_us [get_embedded_vars [lang::message::lookup en_US $key {} {} 0]]
-        set missing_vars [util_get_subset_missing $embedded_vars $embedded_vars_en_us]
-
-        if { [llength $missing_vars] > 0 } {
-            error "Message key '$key' in locale '$locale' has these embedded variables not present in the en_US locale: [join $missing_vars ","]. Message has not been imported."
-        }
-    }
+    
+    # Call semantic and sanity checks on the key before registering.
+    lang::message::check $locale $package_key $message_key $message
     
     # Build up an array of columns to set
     array set cols [list]
@@ -165,7 +182,7 @@ ad_proc -public lang::message::register {
     } else {
         set cols(sync_time) "null"
     } 
-    if { [empty_string_p [string trim $message]] } {
+    if { [string trim $message] eq "" } {
         set cols(message) "null"
     } else {
         set cols(message) [db_map message]
@@ -213,7 +230,7 @@ ad_proc -public lang::message::register {
                 $old_message_array(upgrade_status)
             
             # Trying to avoid hitting Oracle bug#2011927    
-            if { [empty_string_p [string trim $message]] } {
+            if { [string trim $message] eq "" } {
                 db_dml lang_message_null_update {}
             } else { 
                 set cols(message) [db_map message]
@@ -242,7 +259,7 @@ ad_proc -public lang::message::register {
         }
         
         # avoiding bug#2011927 from Oracle.
-        if { [empty_string_p [string trim $message]] } {
+        if { [string trim $message] eq "" } {
             db_dml lang_message_insert_null_msg {}
         } else {
             db_dml lang_message_insert {} -clobs [list $message]
@@ -525,7 +542,7 @@ ad_proc -public lang::message::conflict_count {
     # Build any package and locale where clauses
     set where_clauses [list]
     foreach col {package_key locale} {
-        if { ![empty_string_p [set $col]] } {
+        if { [set $col] ne "" } {
             lappend where_clauses "$col = :${col}"
         }
     }
@@ -610,7 +627,7 @@ ad_proc -private lang::message::format {
     set localized_message "The %animal% jumped across the %barrier%. About 50% of the time, he stumbled, or maybe it was %%20 %times%."
     set value_list { animal "frog" barrier "fence" }
 
-    puts "[format $localized_message $value_list]"
+    ns_log notice formatted=[format $localized_message $value_list]
     
     The output from the example is:
 
@@ -633,7 +650,7 @@ ad_proc -private lang::message::format {
             if { [llength $value_array_list] > 0 } {
                 # A substitution list is provided, the key should be in there
                 
-                if { [lsearch -exact $value_array_keys $variable_string] == -1 } {
+                if {$variable_string ni $value_array_keys} {
                     ns_log Warning "lang::message::format: The value_array_list \"$value_array_list\" does not contain the variable name $variable_string found in the message: $localized_message"
                     
                     # There is no value available to do the substitution with
@@ -652,7 +669,7 @@ ad_proc -private lang::message::format {
                 upvar $upvar_level $variable_name local_variable
 
                 if { [info exists local_variable] } {
-                    if { ![exists_and_not_null array_key] } {
+                    if { (![info exists array_key] || $array_key eq "") } {
                         # Normal Tcl variable
                         append formated_message $local_variable
                     } else {
@@ -660,7 +677,8 @@ ad_proc -private lang::message::format {
                         append formated_message $local_variable($array_key)
                     }
                 } else {
-                    error "Message contains a variable named '$variable_name' which doesn't exist in the caller's environment: message $localized_message"
+                    ns_log warning "Message contains a variable named '$variable_name' which doesn't exist in the caller's environment: message $localized_message"
+		    append formated_message "MISSING: variable '$variable_name' is not available"
                 }
             }
         }
@@ -688,7 +706,7 @@ ad_proc -public lang::message::message_exists_p { locale key } {
     @author Peter Marklund
 } {
     # Make sure messages are in the cache
-    cache
+    lang::message::cache
 
     return [nsv_exists lang_message_$locale $key]        
 }
@@ -758,7 +776,7 @@ ad_proc -public lang::message::lookup {
     @return A localized piece of text.
 } { 
     # Make sure messages are in the cache
-    cache
+    lang::message::cache
 
     # Make sure that a default of "" is transformed into Translation Missing
     # As per discussion on IRC on 2008-03-06
@@ -820,10 +838,10 @@ ad_proc -public lang::message::lookup {
 			} else {
 			    if {[string match "acs-translations.*" $key]} {
 				ns_log Debug "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: $key"
+				set message "MESSAGE KEY MISSING: '$key'"
 			    } else {
 				ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: $key"
+				set message "MESSAGE KEY MISSING: '$key'"
 			    }
 			}
 		    }
@@ -877,9 +895,10 @@ ad_proc -private lang::message::translate {
     set marker "XXYYZZXX. "
     set qmsg "$marker $msg"
     set url "http://babel.altavista.com/translate.dyn?doit=done&BabelFishFrontPage=yes&bblType=urltext&url="
-    set babel_result [ns_httpget "$url&lp=$lang&urltext=[ns_urlencode $qmsg]"]
+    set babel_result [util::http::get -url "$url&lp=$lang&urltext=[ns_urlencode $qmsg]"]
+    set babel_page [dict get $babel_result page]
     set result_pattern "$marker (\[^<\]*)"
-    if {[regexp -nocase $result_pattern $babel_result ignore msg_tr]} {
+    if {[regexp -nocase $result_pattern $babel_page ignore msg_tr]} {
         regsub "$marker." $msg_tr "" msg_tr
         return [string trim $msg_tr]
     } else {
@@ -1004,9 +1023,9 @@ ad_proc -public lang::message::update_description {
     {-description:required}
 } {
     @author Simon Carstensen
-    @creation_date 2003-08-12
+    @creation-date 2003-08-12
 } {
-    if { [empty_string_p [string trim $description]] } {
+    if { [string trim $description] eq "" } {
         db_dml update_description_insert_null {}
     } else {
         db_dml update_description {} -clobs [list $description]

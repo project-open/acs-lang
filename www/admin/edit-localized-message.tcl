@@ -13,7 +13,7 @@ ad_page_contract {
     package_key
     message_key
     show:optional
-    {usage_p "f"}
+    {usage_p:boolean "f"}
     {return_url {}}
 }
 
@@ -50,10 +50,8 @@ set usage_show_url [export_vars -base [ad_conn url] { locale package_key message
 
 set delete_url [export_vars -base message-delete { locale package_key message_key show {return_url {[ad_return_url]}} }]
 
-set first_translated_message ""
 
-
-ad_form -name message -form {
+ad_form -name message_form -form {
     {locale:text(hidden),optional {value $current_locale}}
     {package_key:text(hidden),optional {value $package_key}}
     {message_key:text(hidden),optional {value $message_key}}
@@ -71,17 +69,17 @@ ad_form -name message -form {
 } 
 
 if { $default_locale ne $current_locale } {
-    ad_form -extend -name message -form {
+    ad_form -extend -name message_form -form {
         {original_message:text(inform)
             {label "$default_locale_label Message"}
         }
     }
 }
     
-ad_form -extend -name message -form {
+ad_form -extend -name message_form -form {
     {message:text(textarea)
         {label "$locale_label Message"} 
-        {html { rows 6 cols 40 }}
+        {html { rows 6 cols 40 } }
     }
     {comment:text(textarea),optional
         {label "Comment"}
@@ -119,17 +117,17 @@ ad_form -extend -name message -form {
         and    cu.user_id = lm.creation_user
     }]
 
-    if { [exists_and_not_null message] } {
+    if { ([info exists message] && $message ne "") } {
         set message $message
     } else {
         set message $original_message
     }
-    set original_message [ad_quotehtml $original_message]
+    set original_message [ns_quotehtml $original_message]
 
     if { $description eq "" } {
-        set description [subst {(<a href="$description_edit_url">add description</a>)}]
+        set description [subst {(<a href="[ns_quotehtml $description_edit_url]">add description</a>)}]
     } else {
-        set description "[ad_text_to_html -- $description] [subst { (<a href="$description_edit_url">edit</a>)}]"
+        set description "[ad_text_to_html -- $description] [subst { (<a href="[ns_quotehtml $description_edit_url]">edit</a>)}]"
     }
 
     # Augment the audit trail with info on who created the first message
@@ -164,15 +162,31 @@ ad_form -extend -name message -form {
             }
         } 
 
-        set first_translated_message "<ul> <li>First translated by [acs_community_member_link -user_id $creation_user_id -label $creation_user_name] on $creation_date</li></ul>"
+        set first_translated_message [subst {
+	    <ul> <li>First translated by
+	    [acs_community_member_link -user_id $creation_user_id -label $creation_user_name] on $creation_date
+	    </li></ul>
+	}]
+    } else {
+        set first_translated_message ""
     }
 } -on_submit {
 
+    set first_translated_message ""
+    
+    with_catch errmsg {
+	# Call semantic and sanity checks on the key before registering.
+	lang::message::check $locale $package_key $message_key $message
+    } {
+	template::form::set_error message message $errmsg
+	break
+    }
+    
     # Register message via acs-lang
     lang::message::register -comment $comment $locale $package_key $message_key $message
 
     if { $return_url eq "" } {
-        set return_url "[ad_conn url]?[export_vars { locale package_key message_key show }]"
+        set return_url [export_vars -base [ad_conn url] { locale package_key message_key show }]
     }
     ad_returnredirect $return_url
     ad_script_abort

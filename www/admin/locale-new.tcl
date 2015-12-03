@@ -23,8 +23,11 @@ form create locale_creation
 # information on this view can be found in the docs at http://tahiti.oracle.com/
 # look for the PDF file of Oracle 8i "national language support guide"
 
+### GN: this is apparently Oracle-only
 catch {
-    set nls_values_list [db_list_of_lists select_nls_values {select parameter, value from v$nls_valid_values order by parameter, value}]
+    set nls_values_list [db_list_of_lists select_nls_values {
+	select parameter, value from v$nls_valid_values order by parameter, value
+    }]
 
     foreach nls_value $nls_values_list {
         set value [lindex $nls_value 1]
@@ -114,7 +117,7 @@ if { [form is_valid locale_creation] } {
 
         # We first make sure that there is no default for this language
         set is_default_p [db_string select_default {}]
-        if { $is_default_p == "0" } {
+        if { $is_default_p == 0 } {
             # There is a no default for this language
             set default_p "t"
         }

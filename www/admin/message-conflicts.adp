@@ -1,6 +1,6 @@
 <master>
-  <property name="title">@page_title@</property>
-  <property name="context">@context;noquote@</property>
+  <property name="doc(title)">@page_title;literal@</property>
+  <property name="context">@context;literal@</property>
 
 <p>
   This page lists conflicts resulting from message catalog imports that need manual resolution by a translator
@@ -11,7 +11,7 @@
 
   <tr>
 
-    <td class="list-filter-pane" valign="top" width="200">
+    <td style="width:200px" class="list-filter-pane" valign="top">
 
       <listfilters name="messages"></listfilters>
 

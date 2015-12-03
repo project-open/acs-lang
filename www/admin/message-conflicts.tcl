@@ -11,7 +11,7 @@ ad_page_contract {
 
 foreach optional_var {locale package_key} {
     if { [info exists $optional_var] } {
-        if { [empty_string_p [set $optional_var]] } {
+        if { [set $optional_var] eq "" } {
             unset $optional_var
         }
     }
@@ -29,7 +29,7 @@ list::create \
         edit {
             label ""
             display_template {
-                <img src="/shared/images/Edit16.gif" border="0" width="16" height="16">
+                <img src="/shared/images/Edit16.gif" alt="edit" width="16" height="16">
             }
             link_url_col edit_url
         }

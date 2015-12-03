@@ -1,6 +1,6 @@
 <master>
-  <property name="title">@page_title@</property>
-  <property name="context">@context;noquote@</property>
+  <property name="doc(title)">@page_title;literal@</property>
+  <property name="context">@context;literal@</property>
 
 <p>
   Here's what the configuration looks like at this point:
@@ -34,7 +34,17 @@
     </td>
   </tr>
 
-  <tr bgcolor="yellow">
+  <tr style="background: yellow">
+    <td>
+      UTC time returned from time server  <a
+        href="http://www.timeanddate.com/worldclock/">timeanddate.com</a>:
+    </td>
+    <td>
+      <b>@utc_from_page@</b>
+    </td>
+  </tr>
+
+  <tr style="background: yellow">
     <td>
       UTC time according to database and the OpenACS timezone setting above:
     </td>
@@ -44,7 +54,7 @@
   </tr>
 
   <if @utc_ansi@ not nil>
-    <tr bgcolor="yellow">
+    <tr style="background: yellow">
       <td>
         Actual UTC time according to <a
         href="http://www.timeanddate.com/worldclock/">timeanddate.com</a>:
@@ -56,21 +66,21 @@
   </if>
 
   <if @correct_p@ not nil>
-    <tr bgcolor=<if @correct_p@ true>"#00bb00"</if><else>"red"</else>>
+    <tr style=<if @correct_p@ true>"background: #00bb00"</if><else>"background: red"</else>>
       <td>
-        <font color="white">
+        <span style="color: white">
           Does it look like the OpenACS timezone setting above is correct:
-        </font>
+        </span>
       </td>
       <td>
-        <font color="white">
+        <span style="color: white">
           <if @correct_p@ true>
             <b>YES!</b> (Congratulations)
           </if>
           <else>
             <b>NO</b>. Set below.
           </else>
-        </font>
+        </span>
       </td>
     </tr>
   </if>

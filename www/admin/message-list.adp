@@ -1,12 +1,12 @@
 <master>
-  <property name="title">@page_title@</property>
-  <property name="context">@context;noquote@</property>
+  <property name="doc(title)">@page_title;literal@</property>
+  <property name="context">@context;literal@</property>
   <div style="float: right;">
     <formtemplate id="locale_form">
+      @form_vars;noquote@
       <table cellspacing="2" cellpadding="2" border="0">
         <tr class="form-element"><td class="form-label">Language</td>
         <td class="form-widget"><formwidget id="locale"></td></tr>
-        @form_vars;noquote@
         <tr class="form-element">
         <td align="left" colspan="2"><formwidget id="formbutton:ok"></td></tr>
       </table>
@@ -22,7 +22,7 @@
   </multiple>
 </p>
 
-<include src="/packages/acs-lang/lib/conflict-link" locale="@current_locale@" package_key="@package_key@"/>
+<include src="/packages/acs-lang/lib/conflict-link" locale="@current_locale;literal@" package_key="@package_key;literal@"/>
 
 <ul class="action-links">
   <if @create_p@ true>
@@ -60,7 +60,7 @@
           <multiple name="messages">
             <tr style="background: #EEEEEE">
               <td>
-                <a href="@messages.edit_url@" title="Edit or comment on translation"><img src="/shared/images/Edit16.gif" border="0" width="16" height="16"></a>
+                <a href="@messages.edit_url@" title="Edit or comment on translation"><img src="/shared/images/Edit16.gif" width="16" height="16" alt="edit"></a>
               </td>
               <td>
                 <a href="@messages.edit_url@" title="Edit or comment on translation">@messages.message_key_pretty@</a>
@@ -79,7 +79,7 @@
               </if>
               <if @messages.translated_message@ not nil>
                 <td>
-                  <a href="@messages.delete_url@" title="Delete this messages"><img src="/shared/images/Delete16.gif" border="0" width="16" height="16"></a>
+                  <a href="@messages.delete_url@" title="Delete this messages"><img src="/shared/images/Delete16.gif" alt="delete" width="16" height="16"></a>
                 </td>
              </if>
             </tr>

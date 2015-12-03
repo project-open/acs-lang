@@ -28,7 +28,7 @@ set default_locale_label [lang::util::get_label $default_locale]
 set page_title $locale_label
 set context [list $page_title]
 
-set locale_enabled_p [expr [lsearch [lang::system::get_locales] $current_locale] != -1]
+set locale_enabled_p [expr {[lsearch [lang::system::get_locales] $current_locale] != -1}]
 set site_wide_admin_p [acs_user::site_wide_admin_p]
 
 
@@ -69,10 +69,10 @@ db_multirow -extend {
     set num_translated_pretty [lc_numeric $num_translated]
     set num_untranslated_pretty [lc_numeric $num_untranslated]
 
-    set batch_edit_url "batch-editor?[export_vars { locale package_key }]"
-    set view_messages_url "message-list?[export_vars { locale package_key }]"
-    set view_translated_url "message-list?[export_vars { locale package_key { show "translated" } }]"
-    set view_untranslated_url "message-list?[export_vars { locale package_key { show "untranslated" } }]"
+    set batch_edit_url [export_vars -base batch-editor { locale package_key }]
+    set view_messages_url [export_vars -base message-list { locale package_key }]
+    set view_translated_url [export_vars -base message-list { locale package_key { show "translated" } }]
+    set view_untranslated_url [export_vars -base message-list { locale package_key { show "untranslated" } }]
 }
 
 

@@ -17,8 +17,8 @@ set locale_label [lang::util::get_label $current_locale]
 set default_locale_label [lang::util::get_label $default_locale]
 
 set page_title "Batch edit messages"
-set context [list [list "package-list?[export_vars { locale }]" $locale_label] \
-                 [list "message-list?[export_vars { locale package_key show }]" $package_key] \
+set context [list [list [export_vars -base package-list {locale}] $locale_label] \
+                 [list [export_vars -base message-list {locale package_key show}] $package_key] \
                  $page_title]
 
 
@@ -156,24 +156,24 @@ db_foreach get_messages {} {
     ad_form -extend -name batch_editor -form \
         [list [list "message_key_$count:text(hidden)" {value $message_key}]]
     
-    set message_url "edit-localized-message?[export_vars { locale package_key message_key show }]"
+    set message_url [export_vars -base edit-localized-message { locale package_key message_key show }]
 
-	# Adding section
-	set section_name "$package_key.$message_key"
-	if { ![info exists sections($section_name)] } {
-		set sec [list "-section" $section_name {legendtext "$section_name"}]
-		ad_form -extend -name batch_editor -form [list $sec]
-		set sections($section_name) "$section_name"
-	}
+    # Adding section
+    set section_name "$package_key.$message_key"
+    if { ![info exists sections($section_name)] } {
+	set sec [list "-section" $section_name {legendtext "$section_name"}]
+	ad_form -extend -name batch_editor -form [list $sec]
+	set sections($section_name) "$section_name"
+    }
 
     ad_form -extend -name batch_editor -form \
         [list [list "message_key_pretty_$count:text(inform)" \
                    {label "Message Key"} \
-                   {value "<a href=\"$message_url\">$package_key.$message_key</a>"}]]
+                   {value "<a href=\"[ns_quotehtml $message_url]\">$package_key.$message_key</a>"}]]
     
     if { $description ne "" } {
-        set description_edit_url "edit-description?[export_vars { locale package_key message_key show }]"
-        set description "[ad_text_to_html -- $description] [subst { (<a href="$description_edit_url">edit</a>)}]"
+        set description_edit_url [export_vars -base edit-description { locale package_key message_key show }]
+        set description "[ad_text_to_html -- $description] [subst { (<a href="[ns_quotehtml $description_edit_url]">edit</a>)}]"
 
         ad_form -extend -name batch_editor -form \
             [list [list "description_$count:text(inform),optional" \
@@ -239,7 +239,7 @@ ad_form -extend -name batch_editor -on_request {
         }
     }        
 
-    ad_returnredirect "[ad_conn url]?[export_vars { locale package_key show page_start }]"
+    ad_returnredirect [export_vars -base [ad_conn url] { locale package_key show page_start }]
     ad_script_abort 
 }
 
@@ -276,7 +276,7 @@ for {set count 0} {$count < $total} {incr count 10 } {
     multirow append pagination \
         $text \
         "[lindex $keys $count] - [lindex $keys $end_page]" \
-        "batch-editor?[export_vars { { page_start $count } locale package_key show }]" \
+        [export_vars -base batch-editor { { page_start $count } locale package_key show }] \
         [expr {$count == $page_start}] \
         [expr {$count / 100}]
 }
@@ -302,9 +302,9 @@ multirow extend show_opts url selected_p
 multirow foreach show_opts {
     set selected_p [string equal $show $value]
     if {$value eq "all"} {
-        set url "[ad_conn url]?[export_vars { locale package_key }]"
+        set url [export_vars -base [ad_conn url] { locale package_key }]
     } else { 
-        set url "[ad_conn url]?[export_vars { locale package_key {show $value} }]"
+        set url [export_vars -base [ad_conn url] { locale package_key {show $value} }]
     }
 }
 

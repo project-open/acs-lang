@@ -42,7 +42,7 @@ ad_proc -public lang::system::site_wide_locale {
 
     # Check validity of parameter setting
     set valid_locales [lang::system::get_locales]
-    if { [lsearch -exact $valid_locales $parameter_locale] == -1 } {
+    if {$parameter_locale ni $valid_locales} {
         ns_log Error "The parameter setting acs-lang.SiteWideLocale=\"$parameter_locale\" is invalid. Valid locales are: \"$valid_locales\". Defaulting to en_US locale"
         return en_US
     }
@@ -570,9 +570,9 @@ ad_proc -private lang::conn::browser_locale {} {
     foreach locale $conn_locales {       
         regexp {^([^_]+)(?:_([^_]+))?$} $locale locale language region 
 
-        if { [exists_and_not_null region] } {
+        if { ([info exists region] && $region ne "") } {
             # We have both language and region, e.g. en_US
-            if { [lsearch -exact $system_locales $locale] != -1 } {
+            if {$locale in $system_locales} {
                 # The locale was found in the system, a perfect match           
                 set perfect_match $locale
                 break
@@ -601,9 +601,9 @@ ad_proc -private lang::conn::browser_locale {} {
         }
     }
 
-    if { [exists_and_not_null perfect_match] } {
+    if { ([info exists perfect_match] && $perfect_match ne "") } {
         return $perfect_match
-    } elseif { [exists_and_not_null tentative_match] } {
+    } elseif { ([info exists tentative_match] && $tentative_match ne "") } {
         return $tentative_match
     } else {
         # We didn't find a match
@@ -640,17 +640,20 @@ ad_proc -public lang::conn::language {
     {-package_id ""}
     {-site_wide:boolean}
     {-iso6392:boolean}
+    {-locale ""}
 } {
     Get the language for this request, perhaps for a given package instance.
     
     @param package_id The package for which you want to get the language.
     @param site_wide Set this if you want to get the site-wide language.
     @param iso6392   Set this if you want to force the iso-639-2 code
+    @param locale   obtain language from provided locale
 
     @return 3 chars language code if iso6392 is set, left part of locale otherwise
 } {
-
-    set locale [locale -package_id $package_id -site_wide=$site_wide_p]
+    if {$locale eq ""} {
+	set locale [locale -package_id $package_id -site_wide=$site_wide_p]
+    }
     set conn_lang [lindex [split $locale "_"] 0]
 
     if { $iso6392_p } {

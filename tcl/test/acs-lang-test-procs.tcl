@@ -349,8 +349,9 @@ ad_proc -private lang::test::execute_upgrade {
         } else {
             # Message is supposed to exist in DB
             # Is it new or changed?
-            if { ![info exists base_messages($message_key)] || \
-                     $base_messages($message_key) ne $db_messages($message_key) } {
+            if { ![info exists base_messages($message_key)]
+                 || $base_messages($message_key) ne $db_messages($message_key)
+             } {
                 # Added || updated 
                 aa_log "Adding/updating message $message_key"
                 lang::message::register \
@@ -765,9 +766,7 @@ aa_register_case \
         
     } {
         parameter::set_value -parameter UsePackageLevelLocalesP -package_id [apm_package_id_from_key "acs-lang"] -value $use_package_level_locales_p_org
-        
-        global errorInfo
-        error $errmsg $errorInfo
+        error $errmsg $::errorInfo
     }
 
     parameter::set_value -parameter UsePackageLevelLocalesP -package_id [apm_package_id_from_key "acs-lang"] -value $use_package_level_locales_p_org
@@ -902,8 +901,7 @@ aa_register_case \
 
         if { $error_p } {
             # rethrow the error
-            global errorInfo
-            error $errmsg $errorInfo
+            error $errmsg $::errorInfo
         }
     }
 }
@@ -967,8 +965,7 @@ aa_register_case \
             $gb_message
     } {
         set error_p 1
-        global errorInfo
-        set saved_errorInfo $errorInfo
+        set saved_errorInfo $::errorInfo
     }
 
     # Clean up
@@ -1075,3 +1072,9 @@ aa_register_case lang_messages_correct {
 	}
     }
 }
+
+# Local variables:
+#    mode: tcl
+#    tcl-indent-level: 4
+#    indent-tabs-mode: nil
+# End:

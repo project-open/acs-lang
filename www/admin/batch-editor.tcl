@@ -185,7 +185,7 @@ db_foreach get_messages {} {
         ad_form -extend -name batch_editor -form \
             [list [list "default_locale_message_$count:text(inform),optional" \
                        {label $default_locale_label} \
-                       {value {[ad_quotehtml $default_message]}}]]
+                       {value {[ns_quotehtml $default_message]}}]]
     }
     
     if { [string length $translated_message] > 80 } {
@@ -308,3 +308,9 @@ multirow foreach show_opts {
     }
 }
 
+
+# Local variables:
+#    mode: tcl
+#    tcl-indent-level: 4
+#    indent-tabs-mode: nil
+# End:

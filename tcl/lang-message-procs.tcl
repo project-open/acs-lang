@@ -833,16 +833,11 @@ ad_proc -public lang::message::lookup {
                     if { [message_exists_p $locale $key] } {
                         set message [nsv_get lang_message_$locale $key]
                     } else {
-			if {"TRANSLATION MISSING" != $default} {
+			if {"TRANSLATION MISSING" ne $default} {
 			    set message $default
 			} else {
-			    if {[string match "acs-translations.*" $key]} {
-				ns_log Debug "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: '$key'"
-			    } else {
-				ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: '$key'"
-			    }
+                            ad_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
+                            set message "MESSAGE KEY MISSING: '$key'"
 			}
 		    }
                 }
@@ -1031,3 +1026,9 @@ ad_proc -public lang::message::update_description {
         db_dml update_description {} -clobs [list $description]
     }
 }
+
+# Local variables:
+#    mode: tcl
+#    tcl-indent-level: 4
+#    indent-tabs-mode: nil
+# End:

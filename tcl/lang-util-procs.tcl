@@ -61,8 +61,7 @@ ad_proc -private lang::util::get_hash_indices { multilingual_string } {
 
     @author Peter marklund (peter@collaboraid.biz)
 } {
-    set regexp_pattern {(?:^|[^\\])(\#[-a-zA-Z0-9_:]+\.[-a-zA-Z0-9_:]+\#)}
-    return [get_regexp_indices $multilingual_string $regexp_pattern]
+    return [regexp -inline -indices -all {\#[a-zA-Z0-9_:-]+\.[a-zA-Z0-9_:-]+\#} $multilingual_string]
 }
 
 ad_proc lang::util::message_tag_regexp {} {
@@ -660,15 +659,17 @@ ad_proc -public lang::util::translator_mode_p {} {
 
     @see lang::util::translator_mode_set
 } {
+    if {[info exists ::acs_translator_mode_p]} {
+        return $::acs_translator_mode_p
+    }
     if { [ad_conn isconnected] } {
-        # THere is an HTTP connection - return the client property
-        set translator_mode_p [ad_get_client_property -default 0 acs-lang translator_mode_p]
-	if {"" eq $translator_mode_p} { set translator_mode_p 0}
-	return $translator_mode_p
+        # There is an HTTP connection - return the client property
+        set ::acs_translator_mode_p [ad_get_client_property -default 0 acs-lang translator_mode_p]
     } else {
         # No HTTP connection
-        return 0
+        set ::acs_translator_mode_p 0
     }
+    return $::acs_translator_mode_p
 }
 
 ad_proc -public lang::util::translator_mode_set {
@@ -907,3 +908,9 @@ ad_proc -public lang::util::language_label {
 
     return $lang_label
 }
+
+# Local variables:
+#    mode: tcl
+#    tcl-indent-level: 4
+#    indent-tabs-mode: nil
+# End:

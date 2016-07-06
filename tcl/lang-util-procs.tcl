@@ -660,7 +660,9 @@ ad_proc -public lang::util::translator_mode_p {} {
     @see lang::util::translator_mode_set
 } {
     if {[info exists ::acs_translator_mode_p]} {
-        return $::acs_translator_mode_p
+        set mode $::acs_translator_mode_p
+        if {"" eq $mode} { set mode 0 }
+        return $mode
     }
     if { [ad_conn isconnected] } {
         # There is an HTTP connection - return the client property
@@ -669,7 +671,10 @@ ad_proc -public lang::util::translator_mode_p {} {
         # No HTTP connection
         set ::acs_translator_mode_p 0
     }
-    return $::acs_translator_mode_p
+
+    set mode $::acs_translator_mode_p
+    if {"" eq $mode} { set mode 0 }
+    return $mode
 }
 
 ad_proc -public lang::util::translator_mode_set {

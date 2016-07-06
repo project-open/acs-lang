@@ -851,7 +851,7 @@ ad_proc -public lang::message::lookup {
         set message [lang::message::format $message $substitution_list [expr {$upvar_level + 1}]]
     }
 
-    if { [lang::util::translator_mode_p] } {
+    if { "1" eq [lang::util::translator_mode_p] } {
         # Translator mode - record the message lookup
         lang::util::record_message_lookup $key
         

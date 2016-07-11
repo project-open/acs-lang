@@ -15,6 +15,7 @@ ad_page_contract {
     show:optional
     {usage_p:boolean "f"}
     {return_url {}}
+    {submit_remote_p "1" }
 }
 
 if { [string length $locale] == 2 } {
@@ -47,8 +48,13 @@ set description_edit_url [export_vars -base edit-description { locale package_ke
 
 set usage_hide_url [export_vars -base [ad_conn url] { locale package_key message_key show return_url }]
 set usage_show_url [export_vars -base [ad_conn url] { locale package_key message_key show {usage_p 1} return_url }]
-
 set delete_url [export_vars -base message-delete { locale package_key message_key show {return_url {[ad_return_url]}} }]
+
+
+set submit_remote_options_list [list [list "Submit to translation server" 1]]
+
+
+# element create message_new submit_remote_p -optional -label "" -datatype text -widget checkbox -options $submit_remote_options_list
 
 
 ad_form -name message_form -form {
@@ -57,15 +63,8 @@ ad_form -name message_form -form {
     {message_key:text(hidden),optional {value $message_key}}
     {show:text(hidden),optional}
     {return_url:text(hidden),optional {value $return_url}}
-
-    {message_key_pretty:text(inform)
-        {label "Message Key"}
-        {value "$package_key.$message_key"}
-    }
-    {description:text(inform)
-        {label "Description"}
-        {after_html {}}
-    }
+    {message_key_pretty:text(inform) {label "Message Key"} {value "$package_key.$message_key"}}
+    {description:text(inform) {label "Description"} {after_html {}}}
 } 
 
 if { $default_locale ne $current_locale } {
@@ -77,17 +76,10 @@ if { $default_locale ne $current_locale } {
 }
     
 ad_form -extend -name message_form -form {
-    {message:text(textarea)
-        {label "$locale_label Message"} 
-        {html { rows 6 cols 40 } }
-    }
-    {comment:text(textarea),optional
-        {label "Comment"}
-        {html { rows 6 cols 40 }}
-    }
-    {submit:text(submit)
-        {label "     Update     "}
-    }
+    {message:text(textarea) {label "$locale_label Message"} {html { rows 6 cols 40 }}}
+    {comment:text(textarea),optional {label "Comment"} {html { rows 6 cols 40 }}}
+    {submit_remote_p:text(checkbox),optional {label ""} {options $submit_remote_options_list}}
+    {submit:text(submit) {label "     Update     "}}
 } -on_request {
     set original_message {}
     set description {}
@@ -184,6 +176,11 @@ ad_form -extend -name message_form -form {
     
     # Register message via acs-lang
     lang::message::register -comment $comment $locale $package_key $message_key $message
+
+    # Register on translation server
+    if {1 eq $submit_remote_p} {
+        lang::message::register_remote $locale $package_key $message_key $message
+    }
 
     if { $return_url eq "" } {
         set return_url [export_vars -base [ad_conn url] { locale package_key message_key show }]

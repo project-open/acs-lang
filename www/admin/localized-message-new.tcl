@@ -64,7 +64,7 @@ element create message_new locale -label "locale" -datatype text -widget hidden
 set submit_remote_options_list [list [list "Submit to translation server" 1]]
 element create message_new submit_remote_p -optional -label "" -datatype text \
     -widget checkbox -options $submit_remote_options_list
-
+ 
 
 if { [form is_request message_new] } {
 
@@ -115,7 +115,7 @@ if { [form is_valid message_new] } {
     lang::message::register $locale $package_key $message_key $message
 
     # Register on translation server
-    if {1 == $submit_remote_p} {
+    if {1 eq $submit_remote_p} {
         lang::message::register_remote $locale $package_key $message_key $message
     }
 

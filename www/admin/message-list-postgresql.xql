@@ -7,6 +7,7 @@
     <querytext>
 
     select lm1.message_key,
+           lm1.package_key,
            lm1.message as default_message,
            lm2.message as translated_message,
            lmk.description,

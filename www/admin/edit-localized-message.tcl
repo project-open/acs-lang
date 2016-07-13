@@ -76,8 +76,8 @@ if { $default_locale ne $current_locale } {
 }
     
 ad_form -extend -name message_form -form {
-    {message:text(textarea) {label "$locale_label Message"} {html { rows 6 cols 40 }}}
-    {comment:text(textarea),optional {label "Comment"} {html { rows 6 cols 40 }}}
+    {message:text(textarea) {label "$locale_label Message"} {html { rows 6 cols 60 }}}
+    {comment:text(textarea),optional {label "Comment"} {html { rows 6 cols 60 }}}
     {submit_remote_p:text(checkbox),optional {label ""} {options $submit_remote_options_list}}
     {submit:text(submit) {label "     Update     "}}
 } -on_request {

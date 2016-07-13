@@ -60,6 +60,9 @@
           <multiple name="messages">
             <tr style="background: #EEEEEE">
               <td>
+                <nobr>@messages.package_key@</nobr>
+              </td>
+              <td>
                 <a href="@messages.edit_url@" title="Edit or comment on translation"><img src="/shared/images/Edit16.gif" width="16" height="16" alt="edit"></a>
               </td>
               <td>

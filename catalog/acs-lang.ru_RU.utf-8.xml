@@ -51,7 +51,7 @@
   <msg key="localization-d_fmt">%d.%m.%y</msg>
   <msg key="localization-d_t_fmt">%a %d %B %Y ?., %H:%M %Z</msg>
   <msg key="localization-day">{Воскресенье} {Понедельник} {Вторник} {Среда} {Четверг} {Пятница} {Суббота}</msg>
-  <msg key="localization-decimal_point">,</msg>
+  <msg key="localization-decimal_point">.</msg>
   <msg key="localization-dlong_fmt">%B %d, %Y</msg>
   <msg key="localization-dlongweekday_fmt">%A %B %d, %Y</msg>
   <msg key="localization-firstdayofweek">1</msg>
@@ -77,7 +77,7 @@
   <msg key="localization-t_fmt">%H:%M</msg>
   <msg key="localization-thousands_sep"></msg>
   <msg key="Look_up_message">Искать сообщение</msg>
-  <msg key="Make_this_locale_the_default_locale_for_language">Установить эту локаль локалью по умолчанию для языка '%locales.language%'</msg>
+  <msg key="Make_this_locale_the_default_locale_for_language">Установить эту локаль локалью по умолчанию для языка &#39;%locales.language%&#39;</msg>
   <msg key="Message_key">Ключевое сообщение</msg>
   <msg key="Off">Выкл.</msg>
   <msg key="On">Вкл.</msg>

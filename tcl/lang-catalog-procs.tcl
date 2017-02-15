@@ -942,7 +942,7 @@ ad_proc -private lang::catalog::import_messages {
                 set error_p 1
             }
         } else {
-            ns_log Debug "lang::catalog::import_messages - not doing anything: import_case=\"$import_case\" $message_key $upgrade_status $conflict_p"
+            ns_log Debug "lang::catalog::import_messages - not doing anything: db_change=$db_change, file_change=$file_change, import_case=\"$import_case\" $message_key $upgrade_status $conflict_p"
         }
 
         if { $upgrade_status in {added updated deleted} } {

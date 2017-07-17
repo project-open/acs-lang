@@ -804,7 +804,8 @@ ad_proc -public lang::message::lookup {
         }
     } 
 
-    set l10n_debug_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "LocalizationDebugModeP" 0]
+    set l10n_debug_p 0
+    catch { set l10n_debug_p [im_parameter -package_key "intranet-core" "LocalizationDebugModeP" "" 0] }
 
     # We remember the passed-in locale, because we want the translator mode to show which 
     # messages have been translated, and which have not.

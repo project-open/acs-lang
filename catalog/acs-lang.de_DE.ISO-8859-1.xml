@@ -2,12 +2,19 @@
 <message_catalog package_key="acs-lang" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Actions">Aktionen</msg>
+  <msg key="Administration_of_Localization">Localization administrieren</msg>
+  <msg key="all_locales">alle Locales</msg>
+  <msg key="all_packages">alle Pakete</msg>
   <msg key="available-in-this-language">Deutsche Version verfügbar</msg>
   <msg key="change-locale">Sprache wechseln</msg>
+  <msg key="Edit_definition_of_locale">Definition der Locale bearbeiten</msg>
   <msg key="English">Englisch</msg>
+  <msg key="Export_complete">Alles exportieren</msg>
+  <msg key="Export_results_for">Ergebnisse exportieren für</msg>
   <msg key="French">Französisch</msg>
   <msg key="German">Deutsch</msg>
   <msg key="Locale">Locale</msg>
+  <msg key="Locale_">Locale:</msg>
   <msg key="Locale_for">Locale für %package_name%</msg>
   <msg key="localization-abday">{So} {Mo} {Di} {Mi} {Do} {Fr} {Sa}</msg>
   <msg key="localization-abmon">{Jan} {Feb} {Mrz} {Apr} {Mai} {Jun} {Jul} {Aug} {Sep} {Okt} {Nov} {Dez}</msg>
@@ -41,6 +48,7 @@
   <msg key="localization-positive_sign">+</msg>
   <msg key="localization-t_fmt">%H:%M</msg>
   <msg key="localization-thousands_sep">.</msg>
+  <msg key="Package_">Paket:</msg>
   <msg key="Resolve_message_conflicts">Übersetzungskonflikte aufläsen</msg>
   <msg key="Spanish">Spanisch</msg>
   <msg key="this-language">Deutsch</msg>

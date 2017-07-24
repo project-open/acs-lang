@@ -806,6 +806,8 @@ ad_proc -public lang::message::lookup {
 
     set l10n_debug_p 0
     catch { set l10n_debug_p [im_parameter -package_key "intranet-core" "LocalizationDebugModeP" "" 0] }
+    if {1 eq [lang::util::translator_mode_p] } { set l10n_debug_p 0 }
+
 
     # We remember the passed-in locale, because we want the translator mode to show which 
     # messages have been translated, and which have not.
@@ -814,6 +816,11 @@ ad_proc -public lang::message::lookup {
     # Trying locale directly
     if { [message_exists_p $locale $key] } {
         set message [nsv_get lang_message_$locale $key]
+        if {"9" eq $l10n_debug_p} { 
+            regsub -all {[A-Z]} $message {X} message 
+            regsub -all {[a-z]} $message {x} message 
+        }
+
     } else {
         # Trying default locale for language
         set language [lindex [split $locale "_"] 0]
@@ -822,7 +829,7 @@ ad_proc -public lang::message::lookup {
             set message [nsv_get lang_message_$locale $key]
         } else {
 
-            if {"2" eq $l10n_debug_p} {
+            if {"xx" eq $l10n_debug_p} {
                 
                 regsub -all {[a-z]} $default {x} message
                 regsub -all {[A-Z]} $message {x} message
@@ -834,27 +841,27 @@ ad_proc -public lang::message::lookup {
                 set locale [lang::system::locale]
                 if { [message_exists_p $locale $key] } {
                     set message [nsv_get lang_message_$locale $key]
-                    if {$l10n_debug_p} { set message "<font color=red>$message</font>" }
+                    if {"9" eq $l10n_debug_p} { set message "<font color=red>$message</font>" }
                 } else {
                     # Trying site-wide system locale
                     set locale [lang::system::locale -site_wide]
                     if { [message_exists_p $locale $key] } {
                         set message [nsv_get lang_message_$locale $key]
-                        if {$l10n_debug_p} { set message "<font color=red>$message</font>" }
+                        if {"9" eq $l10n_debug_p} { set message "<font color=red>$message</font>" }
                     } else {
                         # Resorting to en_US
                         set locale "en_US"
                         if { [message_exists_p $locale $key] } {
                             set message [nsv_get lang_message_$locale $key]
-                            if {$l10n_debug_p} { set message "<font color=red>$message</font>" }
+                            if {"9" eq $l10n_debug_p} { set message "<font color=red>$message</font>" }
                         } else {
                             if {"TRANSLATION MISSING" ne $default} {
                                 set message $default
-                                if {$l10n_debug_p} { set message "<font color=red>$message</font>" }
+                                if {"9" eq $l10n_debug_p} { set message "<font color=red>$message</font>" }
                             } else {
                                 ad_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
                                 set message "MESSAGE KEY MISSING: '$key'"
-                                if {$l10n_debug_p} { set message "<font color=red>$message</font>" }                            
+                                if {"9" eq $l10n_debug_p} { set message "<font color=red>$message</font>" }                            
                             }
                         }
                     }

@@ -50,6 +50,7 @@
   <msg key="localization-thousands_sep">.</msg>
   <msg key="Package_">Paket:</msg>
   <msg key="Resolve_message_conflicts">Übersetzungskonflikte aufläsen</msg>
+  <msg key="Return">Zurück</msg>
   <msg key="Spanish">Spanisch</msg>
   <msg key="this-language">Deutsch</msg>
   <msg key="Translated_messages_on_this_page">Übersetzte Nachrichten auf dieser Seite (%locale%)</msg>

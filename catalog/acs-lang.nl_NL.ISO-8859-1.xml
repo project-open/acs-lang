@@ -4,7 +4,7 @@
   <msg key="Actions">Acties</msg>
   <msg key="Administration_of_Localization">Taalregio administratie</msg>
   <msg key="all_packages">alle modules</msg>
-  <msg key="Are_you_sure_you_want_to_export_all_I18N_messages_to_catalog_files">Weet</msg>
+  <msg key="Are_you_sure_you_want_to_export_all_I18N_messages_to_catalog_files">Weet u zeker dat u alle I18N berichten wil exporteren naar de catalog bestanden?</msg>
   <msg key="Are_you_sure_you_want_to_import_all_I18N_messages_from_catalog_files">Bent u zeker dat u all I18N berichten vanuit het catalogus bestand wilt importeren?</msg>
   <msg key="available-in-this-language">Nederlandse versie is beschikbaar</msg>
   <msg key="Can_be_two_character">Kan 2 karakters zijn voor de taal of 5 karakters voor volledige taal</msg>

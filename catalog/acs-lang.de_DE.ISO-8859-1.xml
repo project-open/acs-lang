@@ -2,7 +2,7 @@
 <message_catalog package_key="acs-lang" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Actions">Aktionen</msg>
-  <msg key="Administration_of_Localization">Localization administrieren</msg>
+  <msg key="Administration_of_Localization">Lokalisierung verwalten</msg>
   <msg key="all_locales">alle Locales</msg>
   <msg key="all_packages">alle Pakete</msg>
   <msg key="available-in-this-language">Deutsche Version verfügbar</msg>

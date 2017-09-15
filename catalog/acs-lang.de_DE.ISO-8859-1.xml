@@ -11,9 +11,15 @@
   <msg key="change-locale">Sprache wechseln</msg>
   <msg key="Change_system_locale">System Locale ändern</msg>
   <msg key="Change_system_timezone">System Zeitzone ändern</msg>
+  <msg key="Create_New_Locale">Neue Locale</msg>
   <msg key="Current_system_locale_is">System-Locale ist &lt;strong&gt;%system_locale%: %system_locale_label%&lt;/strong&gt;</msg>
   <msg key="Current_system_timezone_is">System-Zeitzone ist &lt;strong&gt;%timezone%&lt;/strong&gt;</msg>
+  <msg key="Default_Locale_For_Language">Standard-Locale für Sprache</msg>
+  <msg key="Delete_this_locale">Locale löschen</msg>
+  <msg key="Disable_this_locale">Locale deaktivieren</msg>
   <msg key="Edit_definition_of_locale">Definition der Locale bearbeiten</msg>
+  <msg key="Edit_localized_messages_for">Übersetzungen für %locales.locale_label% bearbeiten</msg>
+  <msg key="Edit_this_message">Nachricht bearbeiten</msg>
   <msg key="English">Englisch</msg>
   <msg key="Export_all_messages">Alle Übersetzungen exportieren</msg>
   <msg key="Export_all_messages__title">Alle Übersetzungen für diese Locale als Katalog-Dateien exportieren</msg>
@@ -27,7 +33,9 @@
   <msg key="Import_all_messages">Alle Übersetzungen importieren</msg>
   <msg key="Imports_messages_system-wide_from_catalog_files">Importiert alle Übersetzungen aus Katalog-Dateien</msg>
   <msg key="Installed_Locales">Installierte Locales</msg>
+  <msg key="Label">Beschriftung</msg>
   <msg key="Locale">Locale</msg>
+  <msg key="locale">Locale</msg>
   <msg key="Locale_">Locale:</msg>
   <msg key="Locale_for">Locale für %package_name%</msg>
   <msg key="localization-abday">{So} {Mo} {Di} {Mi} {Do} {Fr} {Sa}</msg>

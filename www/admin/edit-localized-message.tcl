@@ -139,12 +139,11 @@ ad_form -extend -name message_form -form {
                select cu.first_names || ' ' || cu.last_name as creation_user_name,
                       cu.user_id as creation_user_id,
                       to_char(lma.overwrite_date, 'YYYY-MM-DD') as creation_date
-               from lang_messages_audit lma,
-                    cc_users cu
+               from   lang_messages_audit lma
+                      LEFT OUTER JOIN cc_users cu ON (cu.user_id = lma.overwrite_user)
                where  lma.package_key = :package_key
                and    lma.message_key = :message_key
                and    lma.locale = :current_locale
-               and    cu.user_id = lma.overwrite_user
                and    lma.audit_id = (select min(lm2.audit_id)
                                      from lang_messages_audit lm2
                                      where  lm2.package_key = :package_key

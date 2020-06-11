@@ -2,7 +2,8 @@
 <message_catalog package_key="acs-lang" locale="nl_NL" charset="ISO-8859-1">
 
   <msg key="Actions">Acties</msg>
-  <msg key="Administration_of_Localization">Taalregio administratie</msg>
+  <msg key="Administration_of_Localization">Taal kiezen</msg>
+  <msg key="all_locales">all_locales</msg>
   <msg key="all_packages">alle modules</msg>
   <msg key="Are_you_sure_you_want_to_export_all_I18N_messages_to_catalog_files">Weet u zeker dat u alle I18N berichten wil exporteren naar de catalog bestanden?</msg>
   <msg key="Are_you_sure_you_want_to_import_all_I18N_messages_from_catalog_files">Bent u zeker dat u all I18N berichten vanuit het catalogus bestand wilt importeren?</msg>
@@ -10,8 +11,8 @@
   <msg key="Can_be_two_character">Kan 2 karakters zijn voor de taal of 5 karakters voor volledige taal</msg>
   <msg key="Catalog_files_are_stored_in_the_directory">Catalogus bestanden zijn in de directory opgeslagen</msg>
   <msg key="change-locale">Taal instellen</msg>
-  <msg key="Change_system_locale">Wijzigen taalregio systeem</msg>
-  <msg key="Change_system_timezone">Wijzig systeem tijdzone</msg>
+  <msg key="Change_system_locale">Taal wijzigen</msg>
+  <msg key="Change_system_timezone">Tijdzone wijzigen</msg>
   <msg key="Create_New_Locale">Maak nieuwe taalregio aan</msg>
   <msg key="Current_system_locale_is">Huidige systeem taalregio is &lt;strong&gt;%system_locale%: %system_locale_label%&lt;/strong&gt;</msg>
   <msg key="Current_system_timezone_is">Huidige systeem tijdzone is &lt;strong&gt;%timezone%&lt;/strong&gt;</msg>

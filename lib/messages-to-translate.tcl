@@ -11,15 +11,12 @@ template::list::create \
         }
         orig_text {
             label "English text"
-            display_template {
-                 <a href="@messages.translate_orig_url@" target="_blank">@messages.orig_text@</a>
-            }
         }
         translated_text {
             label "Translation"
             display_template {
                <if @messages.translated_p@ false>
-                 <a href="@messages.translate_url@" title="Translate" target="_blank"><font color="red">Translate</font></a>
+                 <a href="@messages.translate_url@" title="Translate"><font color="red">Translate</font></a>
                </if>
                <else>
                  @messages.translated_text@ 
@@ -40,7 +37,7 @@ template::list::create \
     }
 
 if { $display_p } {
-    multirow create messages message_key orig_text translated_text translate_url translated_p translate_orig_url
+    multirow create messages message_key orig_text translated_text translate_url translated_p
 
     foreach message_key [lang::util::get_message_lookups] {
 
@@ -59,16 +56,10 @@ if { $display_p } {
 	    locale
 	    {return_url [ad_return_url]}
 	}]
-        set translate_orig_url [export_vars -base /acs-lang/admin/edit-localized-message {
-	    {message_key $message_key_part}
-	    {package_key $package_key_part}
-	    {locale en_US}
-	    {return_url [ad_return_url]}
-	}]
 
         set translated_p [lang::message::message_exists_p [ad_conn locale] $message_key]
         
-        multirow append messages $message_key $orig_text $translated_text $translate_url $translated_p $translate_orig_url
+        multirow append messages $message_key $orig_text $translated_text $translate_url $translated_p
     }
 }
 

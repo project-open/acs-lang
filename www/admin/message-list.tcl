@@ -8,7 +8,7 @@ ad_page_contract {
     @cvs-id $Id$
 } {
     locale
-    { package_key ""}
+    package_key
     {show "all"}
 } -validate {
     show_valid -requires { show } {
@@ -48,15 +48,24 @@ set new_message_url [export_vars -base localized-message-new { locale package_ke
 #
 #####
 
-set package_key_sql " = :package_key"
-if {"" eq $package_key} { set package_key_sql " in (select package_key from apm_packages)" }
-
-db_1row counts "
-    select (select count(*) from lang_messages where package_key $package_key_sql and locale = :locale and deleted_p = 'f') as num_translated,
-           (select count(*) from lang_messages where package_key $package_key_sql and locale = :default_locale and deleted_p = 'f') as num_messages,
-           (select count(*) from lang_messages where package_key $package_key_sql and locale = :default_locale and deleted_p = 't') as num_deleted
+db_1row counts {
+    select (select count(*) 
+            from lang_messages 
+            where package_key = :package_key 
+            and locale = :locale
+            and deleted_p = 'f') as num_translated,
+           (select count(*) 
+            from lang_messages 
+            where package_key = :package_key 
+            and locale = :default_locale 
+            and deleted_p = 'f') as num_messages,
+            (select count(*) 
+             from lang_messages 
+             where package_key = :package_key 
+             and locale = :default_locale 
+             and deleted_p = 't') as num_deleted
     from dual
-"
+}
 set num_untranslated [expr {$num_messages - $num_translated}]
 set num_messages_pretty [lc_numeric [expr {$num_messages + $num_deleted}]]
 set num_translated_pretty [lc_numeric $num_translated]
